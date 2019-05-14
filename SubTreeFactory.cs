@@ -7,10 +7,10 @@ namespace Rogue {
 
 public class SubTreeFactory : MonoBehaviour {
 
-        public  Node CreateCombatSubtree(Blackboard blackboard, AiGunAim aiGunAim, Transform target, NavMeshAgent agent)
+        public  Node CreateCombatSubtree(Blackboard blackboard, AiGunAim aiGunAim, Transform target, NavMeshAgent agent, Shoot shoot, float nextFire, float fireRate)
         {
             return new Parallel(Parallel.Policy.ONE, Parallel.Policy.ONE,
-                new Repeater(-1, new Action(() => Look(target,aiGunAim))) { Label = "Aim" },
+                new Repeater(-1, new Action(() => Look(target, aiGunAim))) { Label = "Aim" },
                                 // go towards player until playerDistance is greater than 20f ( in that case, _shouldCancel will get true )
                                 new Action((bool _shouldCancel) =>
                                 {
@@ -19,7 +19,7 @@ public class SubTreeFactory : MonoBehaviour {
                                         if (agent != null)
                                         {
 
-                                            MoveTowards(blackboard.Get<Vector3>("playerLocalPos"),agent,target);
+                                            MoveTowards(blackboard.Get<Vector3>("playerLocalPos"), agent, target);
                                         }
                                         return Action.Result.PROGRESS;
                                     }
@@ -28,7 +28,27 @@ public class SubTreeFactory : MonoBehaviour {
                                         return Action.Result.FAILED;
                                     }
                                 })
-                                { Label = "Follow" });
+                                { Label = "Follow" },
+                                new Action((bool _shouldCancel) =>
+                                {
+                                    if (!_shouldCancel)
+                                    {
+                                        if (shoot != null)
+                                            if (Time.time > nextFire)
+                                            {
+                                                Shoot();
+                                                nextFire = Time.time + fireRate;
+                                            }
+                                        return Action.Result.PROGRESS;
+                                    }
+                                    else
+                                    {
+                                        return Action.Result.FAILED;
+                                    }
+                                })
+                                { Label = "Shoot" }
+                            );
+                                
         }
         void Look(Transform target, AiGunAim aiGunAim)
         {
@@ -52,6 +72,11 @@ public class SubTreeFactory : MonoBehaviour {
 
 
             //  transform.localPosition += localPosition * 0.5f * Time.deltaTime;
+        }
+        private void Shoot()
+        {
+            //shoot.ShootGun();
+            Debug.Log("Bang");
         }
     }
 }
