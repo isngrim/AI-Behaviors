@@ -50,6 +50,7 @@ public class AiGunAim : MonoBehaviour {
             if (EnemyInFieldOfView(fovStartPoint))
             {
                 LookHandler();
+                
             }
             else
             {
