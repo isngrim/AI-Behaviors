@@ -77,9 +77,9 @@ public class PossesionTestAi : MonoBehaviour {
 
         private void UpdatePlayerDistance()
         {
-
             target = GameObject.FindGameObjectWithTag("Player").transform;
-            if (playerLocalPos != null) { }
+            behaviorTree.Blackboard["target"] = target;
+        
             playerLocalPos = this.transform.InverseTransformPoint(GameObject.FindGameObjectWithTag("Player").transform.position);
             behaviorTree.Blackboard["playerLocalPos"] = playerLocalPos;
             behaviorTree.Blackboard["playerDistance"] = playerLocalPos.magnitude;

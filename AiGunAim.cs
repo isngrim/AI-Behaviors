@@ -47,6 +47,7 @@ public class AiGunAim : MonoBehaviour {
                 }
        public void AimAt()
         {
+            target = GameObject.FindGameObjectWithTag("Player");
             if (EnemyInFieldOfView(fovStartPoint))
             {
                 LookHandler();
