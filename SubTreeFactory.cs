@@ -8,27 +8,59 @@ namespace Rogue {
     public class SubTreeFactory : MonoBehaviour {
 
        public PossesionTestAi possesionTestAi;
-        public AiMovementHandler aiMovementHandler;
+        public AiBehaviourHandler aiBehaviourHandler;
     
         public  Node CreateCombatSubtree(Blackboard blackboard, AiGunAim aiGunAim, Transform target, NavMeshAgent agent, Shoot shoot, float nextFire, float fireRate)
         {
+
             return new Parallel(Parallel.Policy.ONE, Parallel.Policy.ONE,
-                new Repeater(-1, new Action(() => aiMovementHandler.Look(target, aiGunAim))) { Label = "Aim" },
+              
+                    new Action((bool _shouldCancel) =>
+                    {
+                        if (!_shouldCancel)
+                        {
+                            if (target != null)
+                            {
+                                aiGunAim.AimAt(target);
+                                aiBehaviourHandler.Look(target, aiGunAim);
+                            }
+                            else
+                            {
+                                return Action.Result.FAILED;
+                            }
+                            if (Time.time > nextFire)
+                                {
+                                 
+                                    
+                                    aiBehaviourHandler.Shoot();
+                                    Debug.Log("Bang");
+                                    nextFire = Time.time + fireRate;
+                                }
+                            return Action.Result.PROGRESS;
+                        }
+                        else
+                        {
+                            return Action.Result.FAILED;
+                        }
+                    })
+                    { Label = "Shoot"},
                                 // go towards player until playerDistance is greater than 20f ( in that case, _shouldCancel will get true )
                                 new Action((bool _shouldCancel) =>
                                 {
                                     if (!_shouldCancel)
                                     {
-                                        if (agent != null)
-                                        {
 
-                                            aiMovementHandler.MoveTowards(target);
-                                            
+                                        if (target != null)
+                                        {
+                                            aiBehaviourHandler.MoveTowards(target);
                                         }
                                         else
                                         {
-                                            Debug.Log("no agent");
-                                        } 
+                                            return Action.Result.FAILED;
+                                        }
+                                            
+                                        
+                                    
                                         return Action.Result.PROGRESS;
                                     }
                                     else
@@ -36,25 +68,8 @@ namespace Rogue {
                                         return Action.Result.FAILED;
                                     }
                                 })
-                                { Label = "Follow" },
-                                new Action((bool _shouldCancel) =>
-                                {
-                                    if (!_shouldCancel)
-                                    {
-                                        if (shoot != null)
-                                            if (Time.time > nextFire)
-                                            {
-                                                aiMovementHandler.Shoot();
-                                                nextFire = Time.time + fireRate;
-                                            }
-                                        return Action.Result.PROGRESS;
-                                    }
-                                    else
-                                    {
-                                        return Action.Result.FAILED;
-                                    }
-                                })
-                                { Label = "Shoot" }
+                                { Label = "Follow" }
+                             
                             );
                                 
         }
