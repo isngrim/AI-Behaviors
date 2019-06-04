@@ -1,2 +1,2 @@
 # AI-Behaviors
-Collection of my poor AI
+Collection of my Sad AI
