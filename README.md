@@ -1,6 +1,8 @@
 # AI-Behaviors
 Collection of my Sad AI
+
 Discription of te scripts and their uses (and some ToDos so i dont forget to do it)
+
 AiGunAim.cs:
 this script goes on the Camera GameObject,it will point the camera object at its target,simulating a player aiming
 
