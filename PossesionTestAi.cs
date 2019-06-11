@@ -4,20 +4,23 @@ using UnityEngine;
 using NPBehave;
 using UnityEngine.AI;
 
-namespace Rogue {
+namespace Rogue
+{
 
-public class PossesionTestAi : MonoBehaviour {
+    public class PossesionTestAi : MonoBehaviour
+    {
 
         public Blackboard thisblackboard;
-        public string targetType = "Player";
+        //public string targetType = "Player";
         private Root behaviorTree;
         public Transform target;
         public NavMeshAgent agent;
         public float nextFire;
         public float fireRate = 7f;
-       // public LayerMask layerMask;
+        // public LayerMask layerMask;
         public float speed = 5f;
         public Shoot shoot;
+        AIPatrol aiPatrol;
         public AiGunAim aiGunAim;
         Vector3 playerLocalPos;
         public float viewDistance;
@@ -28,7 +31,8 @@ public class PossesionTestAi : MonoBehaviour {
         public string opponentsTag = "Player";
         private void OnEnable()
         {
-          //  target = GameObject.FindGameObjectWithTag("Player").transform;
+            //  target = GameObject.FindGameObjectWithTag("Player").transform;
+            aiPatrol = gameObject.GetComponentInChildren<AIPatrol>();
             agent = gameObject.GetComponentInChildren<NavMeshAgent>();
             agent.updateRotation = false;
             shoot = gameObject.GetComponentInChildren<Shoot>();
@@ -41,7 +45,7 @@ public class PossesionTestAi : MonoBehaviour {
             // create our behaviour tree and get it's blackboard
             behaviorTree = CreateBehaviourTree();
             thisblackboard = behaviorTree.Blackboard;
-           
+
 
             //agent.updatePosition = true;
             // attach the debugger component if executed in editor (helps to debug in the inspector) 
@@ -53,7 +57,17 @@ public class PossesionTestAi : MonoBehaviour {
             // start the behaviour tree
             behaviorTree.Start();
         }
-
+        private void Update()
+        {
+            if (target != null) {
+                if (target.gameObject.activeInHierarchy == false)
+                {
+                    target = null;
+                    behaviorTree.Blackboard["target"] = target;
+                }
+            }
+            
+        }
         private Root CreateBehaviourTree()
         {
             // we always need a root node
@@ -67,27 +81,29 @@ public class PossesionTestAi : MonoBehaviour {
                   // check the 'playerDistance' blackboard value.
                   // When the condition changes, we want to immediately jump in or out of this path, thus we use IMMEDIATE_RESTART
                   new BlackboardCondition("target", Operator.IS_NOT_EQUAL, null, Stops.IMMEDIATE_RESTART,
-                 
-                          subTreeFactory.CreateCombatSubtree(thisblackboard,aiGunAim,target,agent,shoot,nextFire,fireRate)
+
+                          subTreeFactory.CreateCombatSubtree(thisblackboard, aiGunAim, target, agent, shoot, aiPatrol, nextFire, fireRate)
 
 
                         ),
 
                         // park until playerDistance does change
+                       new Observer(aiPatrol.DoPatrolTrue,aiPatrol.DoPatrolFalse,
                         new Sequence(
-                            new Action(() => SetColor(Color.grey)) { Label = "Change to Gray" },
+                           new Action(() => aiPatrol.StartPatrol()) { Label = "Patrol" },
+                          
                             new WaitUntilStopped()
+                            
                         )
                     )
                 )
-            );
+            ));
         }
 
         //private void UpdatePlayerDistance()
         //{
-        //    target = GameObject.FindWithTag(targetType).transform;
-        //    behaviorTree.Blackboard["target"] = target;
-        
+
+   
         //    playerLocalPos = this.transform.InverseTransformPoint(GameObject.FindGameObjectWithTag(targetType).transform.position);
         //    behaviorTree.Blackboard["playerLocalPos"] = playerLocalPos;
         //    behaviorTree.Blackboard["playerDistance"] = playerLocalPos.magnitude;
@@ -95,7 +111,7 @@ public class PossesionTestAi : MonoBehaviour {
 
         void FindTarget()
         {
-            
+
             if (target != null)
             {
 
@@ -105,7 +121,7 @@ public class PossesionTestAi : MonoBehaviour {
                     behaviorTree.Blackboard["target"] = target;
                 }
             }
-           
+
             if (target == null)
             {
                 foreach (GameObject go in opponentsList)
@@ -119,7 +135,13 @@ public class PossesionTestAi : MonoBehaviour {
                         {
                             if (!Physics.Linecast(transform.position, go.transform.position, viewMask))
                             {
+                                behaviorTree.Blackboard["target"] = null;
                                 target = go.transform;
+                                behaviorTree.Blackboard["target"] = target;
+                            }
+                            else
+                            {
+                                target = null;
                                 behaviorTree.Blackboard["target"] = target;
                             }
                         }
@@ -154,11 +176,11 @@ public class PossesionTestAi : MonoBehaviour {
             return false;
 
         }
-        private void OnDrawGizmos()
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawRay(transform.position, transform.forward * viewDistance);
-        }
+        //private void OnDrawGizmos()
+        //{
+        //    Gizmos.color = Color.red;
+        //    Gizmos.DrawRay(transform.position, transform.forward * viewDistance);
+        //}
 
         private void SetColor(Color color)
         {
