@@ -1,5 +1,7 @@
 # AI-Behaviors
-Collection of my Sad AI
+Collection of my AI Practice
+
+TODO:Clean up code
 
 Discription of the scripts and their uses (and some ToDos so i dont forget to do it)
 
