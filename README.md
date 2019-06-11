@@ -1,5 +1,5 @@
 # AI-Behaviors
-Collection of my AI Practice
+Collection of my AI Practice,still a WIP
 
 TODO:
   -Clean up code
