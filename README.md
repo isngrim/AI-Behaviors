@@ -20,7 +20,7 @@ PossesionTestAi.cs:
 This is the main Behaviour tree.(ToDo: have the script find the relevent scripts on its own,this should simplify set-up,also remove the references to PossessionTest,should just name the ai TestAi or BasicAi)
 
 Possesion.cs: 
-this script lets you swap bodies with an ai,its a part of the prototype this ai was made for and not relevent to the AI functionality
+this script lets you swap bodies with an ai,its a part of the prototype this ai was made for and not relevent to the AI functionality,currently doesnt work,mrrd tp change some script refernces to match the new ai systems 
 
 Shoot.cs:
 shoots things
