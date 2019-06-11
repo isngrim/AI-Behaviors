@@ -10,31 +10,43 @@ public class AiGunAim : MonoBehaviour {
         public Transform target;
 
         public GameObject fovStartPoint;
-        public float lookSpeed = 20;
+        public float lookSpeed = 40;
         public float maxAngle = 90;
-
+      
         private Quaternion targetRotation;
         private Quaternion lookAt;
 
- 
-	// Update is called once per frame
-	void Update () {
+        private void Start()
+        {
+            PossesionTestAi possesionTestAi = GetComponentInParent<PossesionTestAi>();
+        }
+        // Update is called once per frame
+        void Update () {
             //For Testing
            //AimAt();     
 
     }
+        public void ResetRotation(bool reset)
+        {
+            Debug.Log("i am resetting rotation");
+            targetRotation = Quaternion.Euler(0,0,0);
+            Debug.Log(targetRotation);
+            transform.rotation = Quaternion.Euler(0, 0, 0);
+            Quaternion.Lerp(transform.localRotation, targetRotation, Time.deltaTime * lookSpeed);
+            Debug.Log("my local rotation is " + transform.rotation);
+        }
         public void LookHandler(Transform target)
         {
           //target = GameObject.FindGameObjectWithTag("Player").transform;
          
                Vector3 direction = target.transform.position - transform.position;
-            targetRotation = Quaternion.LookRotation(direction);
-            lookAt = Quaternion.RotateTowards(transform.rotation, targetRotation, Time.deltaTime * lookSpeed);
+            targetRotation = Quaternion.LookRotation(direction,Vector3.up);
+            lookAt = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * lookSpeed);
             transform.rotation = lookAt;
         }
       public  bool EnemyInFieldOfView(GameObject looker , Transform target)
         {
-            
+         
                 Vector3 targetDir = target.transform.position - transform.position;
 
                 float angle = Vector3.Angle(targetDir, looker.transform.forward);
@@ -59,8 +71,13 @@ public class AiGunAim : MonoBehaviour {
             else
             {
                 targetRotation = Quaternion.Euler(0, 0, 0);
-                transform.localRotation = Quaternion.RotateTowards(transform.localRotation, targetRotation, Time.deltaTime * lookSpeed);
+                transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRotation, Time.deltaTime * lookSpeed);
             }
         }
-}
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(transform.position, transform.forward * 100);
+        }
+    }
 }

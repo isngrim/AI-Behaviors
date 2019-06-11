@@ -3,39 +3,43 @@ using System.Collections.Generic;
 using UnityEngine;
 using NPBehave;
 using UnityEngine.AI;
-namespace Rogue {
+namespace Rogue
+{
 
-    public class SubTreeFactory : MonoBehaviour {
+    public class SubTreeFactory : MonoBehaviour
+    {
 
-       public PossesionTestAi possesionTestAi;
+        public PossesionTestAi possesionTestAi;
         public AiBehaviourHandler aiBehaviourHandler;
-    
-        public  Node CreateCombatSubtree(Blackboard blackboard, AiGunAim aiGunAim, Transform target, NavMeshAgent agent, Shoot shoot, float nextFire, float fireRate)
+
+        public Node CreateCombatSubtree(Blackboard blackboard, AiGunAim aiGunAim, Transform target, NavMeshAgent agent, Shoot shoot,AIPatrol aiPatrol, float nextFire, float fireRate)
         {
 
-            return new Parallel(Parallel.Policy.ONE, Parallel.Policy.ONE,
-              
+            return new Observer(EmptyMethod, aiGunAim.ResetRotation, 
+                new Parallel(Parallel.Policy.ONE, Parallel.Policy.ONE,
+
                     new Action((bool _shouldCancel) =>
                     {
                         if (!_shouldCancel)
                         {
                             if (target != null)
                             {
+                                agent.updateRotation = false;
                                 aiGunAim.AimAt(target);
-                                aiBehaviourHandler.Look(target, aiGunAim);
+                                aiBehaviourHandler.Look(target);
                             }
                             else
                             {
                                 return Action.Result.FAILED;
                             }
                             if (Time.time > nextFire)
-                                {
-                                 
-                                    
-                                    aiBehaviourHandler.Shoot();
-                                    Debug.Log("Bang");
-                                    nextFire = Time.time + fireRate;
-                                }
+                            {
+                               
+
+                                aiBehaviourHandler.Shoot();
+                          
+                                nextFire = Time.time + fireRate;
+                            }
                             return Action.Result.PROGRESS;
                         }
                         else
@@ -43,7 +47,7 @@ namespace Rogue {
                             return Action.Result.FAILED;
                         }
                     })
-                    { Label = "Shoot"},
+                    { Label = "Shoot" },
                                 // go towards player until playerDistance is greater than 20f ( in that case, _shouldCancel will get true )
                                 new Action((bool _shouldCancel) =>
                                 {
@@ -58,9 +62,9 @@ namespace Rogue {
                                         {
                                             return Action.Result.FAILED;
                                         }
-                                            
-                                        
-                                    
+
+
+
                                         return Action.Result.PROGRESS;
                                     }
                                     else
@@ -69,10 +73,13 @@ namespace Rogue {
                                     }
                                 })
                                 { Label = "Follow" }
-                             
-                            );
-                                
+
+                            ));
+
         }
-       
+void EmptyMethod()
+        {
+
+        }
     }
 }
