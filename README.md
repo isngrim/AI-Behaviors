@@ -4,9 +4,6 @@ Collection of my AI Practice,still a WIP
 TODO:
   -Clean up code
   
-  -have the ai at least change stopping distance's for combat and patrol
-  
-  -fix ai aiming bug/figure out what the bug is
 
 Discription of the scripts and their uses (and some ToDos so i dont forget to do it)
 
