@@ -1,77 +1,95 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Rogue {
 
 public class AiGunAim : MonoBehaviour {
 
-
-        public Transform target;
-
+        public GameObject character;
+      //  public Transform target;
+        bool resetAim;
         public GameObject fovStartPoint;
-        public float lookSpeed = 40;
+        public float lookSpeed = 4;
         public float maxAngle = 90;
-      
-        private Quaternion targetRotation;
+        private Quaternion characterRotation;
+        private Quaternion cameraRotation;
         private Quaternion lookAt;
-
+        public NavMeshAgent navMeshAgent;
         private void Start()
         {
+            NavMeshAgent navMeshAgent = GetComponentInParent<NavMeshAgent>();
             PossesionTestAi possesionTestAi = GetComponentInParent<PossesionTestAi>();
         }
         // Update is called once per frame
         void Update () {
             //For Testing
-           //AimAt();     
+           // AimAt(target);    
+            if (resetAim == true) //maybe add a timer so its not called every frame?
+            {
+             // ResetRotation();
+            }
+          
 
     }
-        public void ResetRotation(bool reset)
+        //these are to toggle the AimReset, seems to work better in update than called by BT
+        
+        public void DoAimReset(bool toggle)
         {
-            Debug.Log("i am resetting rotation");
-            targetRotation = Quaternion.Euler(0,0,0);
-            Debug.Log(targetRotation);
-            transform.rotation = Quaternion.Euler(0, 0, 0);
-            Quaternion.Lerp(transform.localRotation, targetRotation, Time.deltaTime * lookSpeed);
-            Debug.Log("my local rotation is " + transform.rotation);
+            resetAim = true;
         }
-        public void LookHandler(Transform target)
+        public void StopAimReset()
         {
-          //target = GameObject.FindGameObjectWithTag("Player").transform;
-         
-               Vector3 direction = target.transform.position - transform.position;
-            targetRotation = Quaternion.LookRotation(direction,Vector3.up);
-            lookAt = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * lookSpeed);
-            transform.rotation = lookAt;
+            resetAim = false;
         }
-      public  bool EnemyInFieldOfView(GameObject looker , Transform target)
-        {
+        //public void ResetRotation()
+        //{
+        //    Debug.Log("i am resetting rotation");
+        //    cameraRotation = Quaternion.Euler(0f,0f,0f);
+    
+        //    transform.localRotation = Quaternion.Slerp(transform.rotation, cameraRotation, Time.deltaTime * lookSpeed);
+           
+        //}
+
+      //public  bool EnemyInFieldOfView(GameObject looker , Transform target)
+      //  {
          
-                Vector3 targetDir = target.transform.position - transform.position;
+      //          Vector3 targetDir = target.position - transform.position;
 
-                float angle = Vector3.Angle(targetDir, looker.transform.forward);
+      //          float angle = Vector3.Angle(targetDir, looker.transform.forward);
 
-                if (angle < maxAngle)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-               }
+      //          if (angle < maxAngle)
+      //          {
+      //              return true;
+      //          }
+      //          else
+      //          {
+      //              return false;
+      //          }
+      //         }
        public void AimAt(Transform target)
         {
-            //target = GameObject.FindGameObjectWithTag("Player").transform;
-            if (EnemyInFieldOfView(fovStartPoint,target) && target != null)
+        
+            if (/*EnemyInFieldOfView(fovStartPoint,target) &&*/ target != null)
             {
-                LookHandler(target);
-                
+
+               Quaternion targetRotation = Quaternion.LookRotation(target.position - transform.position);
+                cameraRotation = targetRotation;
+                characterRotation = targetRotation;
+                cameraRotation.y = 0;
+                cameraRotation.z = 0;
+                characterRotation.x = 0;
+                characterRotation.z = 0;
+                var str = Mathf.Min(lookSpeed * Time.deltaTime, 1);
+                transform.localRotation = Quaternion.Slerp(transform.localRotation, cameraRotation, str);
+                character.transform.localRotation = Quaternion.Slerp(character.transform.localRotation, characterRotation, str);
+              
             }
             else
             {
-                targetRotation = Quaternion.Euler(0, 0, 0);
-                transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRotation, Time.deltaTime * lookSpeed);
+                cameraRotation = Quaternion.Euler(0, 0, 0);
+                transform.localRotation = Quaternion.RotateTowards(transform.localRotation, cameraRotation, Time.deltaTime * lookSpeed);
             }
         }
         private void OnDrawGizmos()

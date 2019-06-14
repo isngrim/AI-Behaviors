@@ -19,15 +19,17 @@ public class AiBehaviourHandler : MonoBehaviour {
             aiGunAim = gameObject.GetComponentInChildren<AiGunAim>();
             shoot = gameObject.GetComponentInChildren<Shoot>();
             agent = gameObject.GetComponent<NavMeshAgent>();
+           // agent.updateRotation = false;
             //target = GameObject.FindGameObjectWithTag("Player").transform;
         }
         public void Look(Transform target)
         {
-          var  lookDir = target.transform.position - transform.position;
-            lookDir.y = 0;
-            var targetRotation = Quaternion.LookRotation(lookDir);
+          //var  lookDir = target.transform.position - transform.position;
+          //  lookDir.y = 0;
            
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+          //  var targetRotation = Quaternion.LookRotation(lookDir);
+           
+          //  transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, speed * Time.deltaTime);
 
 
             //Debug.Log("Aiming");
@@ -41,10 +43,11 @@ public class AiBehaviourHandler : MonoBehaviour {
         {
             if (this.gameObject.activeInHierarchy == true)
             {
+                agent.stoppingDistance = 7f;
                 agent.SetDestination(target.position);
             }
-               
-               // Debug.Log("Moving to" + target.position);
+              
+               Debug.Log(gameObject.name +" Moving to " + target.position);
            
 
 

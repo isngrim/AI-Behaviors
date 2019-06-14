@@ -29,18 +29,15 @@ public class AIPatrol : MonoBehaviour
     }
     public void StartPatrol()
     {
-        doPatrol = true;
-
-       // Debug.Log("Starting Patrol");
-
        
+        // Debug.Log("Starting Patrol");
         if (navMeshAgent == null)
         {
             Debug.LogError("Missing NavMeshAgent on " + gameObject.name);
         }
         else
         {
-            navMeshAgent.updateRotation = true;
+              navMeshAgent.updateRotation = true;
             if (currentWaypoint == null)
             {
                 GameObject[] allWaypoints = GameObject.FindGameObjectsWithTag("Waypoint");
@@ -60,26 +57,24 @@ public class AIPatrol : MonoBehaviour
                 {
                     Debug.LogError("Failed to Find Waypoints to use in the scene");
                 }
-
-
-
-
             }
-            
             SetDestination();
-
+            doPatrol = true;
         }
     }
     // Update is called once per frame
     void Update()
     {
-        
-           if(doPatrol == true)
-        {
+        if (doPatrol == true)
+        {if(navMeshAgent.stoppingDistance != stoppingDistance)
+            {
+               navMeshAgent.stoppingDistance = stoppingDistance;
+            }
+           
             Debug.Log("Im Patrolling!");
             if (travelling && navMeshAgent.remainingDistance <= stoppingDistance)
             {
-               // Debug.Log("travilng = false");
+                // Debug.Log("travilng = false");
                 travelling = false;
                 waypointsVisited++;
                 if (patrolWaiting)
@@ -106,17 +101,13 @@ public class AIPatrol : MonoBehaviour
         }
         else
         {
-            
             if (travelling == true)
             {
-                navMeshAgent.SetDestination(this.transform.position);
+                navMeshAgent.SetDestination(transform.position);
                 travelling = false;
-               // Debug.Log("im not moving!");
+                // Debug.Log("im not moving!");
             }
-           
         }
-        
-       
     }
     private void SetDestination()
     {
@@ -126,14 +117,12 @@ public class AIPatrol : MonoBehaviour
             ConnectedWaypoint nextWaypoint = currentWaypoint.NextWaypoint(previousWaypoint);
             previousWaypoint = currentWaypoint;
             currentWaypoint = nextWaypoint;
-        }
-        
+        }       
             Vector3 targetVector = currentWaypoint.transform.position;
-
             navMeshAgent.SetDestination(targetVector);
         //Debug.Log("travilng = true");
-        travelling = true;
-        
+        navMeshAgent.stoppingDistance = stoppingDistance;
+        travelling = true;      
     }
     public void DoPatrolTrue()
     {
@@ -146,5 +135,4 @@ public class AIPatrol : MonoBehaviour
         doPatrol = false;
         //Debug.Log("patrol = false");
     }
-
 }

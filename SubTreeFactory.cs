@@ -8,16 +8,21 @@ namespace Rogue
 
     public class SubTreeFactory : MonoBehaviour
     {
-
+       private RaycastHit hit;
+        public GameObject fpsCamera;
         public PossesionTestAi possesionTestAi;
         public AiBehaviourHandler aiBehaviourHandler;
-
-        public Node CreateCombatSubtree(Blackboard blackboard, AiGunAim aiGunAim, Transform target, NavMeshAgent agent, Shoot shoot,AIPatrol aiPatrol, float nextFire, float fireRate)
+        private void Start()
+        {
+            possesionTestAi = GetComponentInChildren<PossesionTestAi>();
+            aiBehaviourHandler = GetComponentInChildren<AiBehaviourHandler>();
+        }
+        public Node CreateCombatSubtree(Blackboard blackboard, AiGunAim aiGunAim, Transform target, NavMeshAgent agent, Shoot shoot,AIPatrol aiPatrol, string opponentsTag, float nextFire, float fireRate)
         {
 
-            return new Observer(EmptyMethod, aiGunAim.ResetRotation, 
+            return new Observer(aiGunAim.StopAimReset, aiGunAim.DoAimReset, 
                 new Parallel(Parallel.Policy.ONE, Parallel.Policy.ONE,
-
+                new Service(possesionTestAi.EmptyMethod,
                     new Action((bool _shouldCancel) =>
                     {
                         if (!_shouldCancel)
@@ -25,28 +30,37 @@ namespace Rogue
                             if (target != null)
                             {
                                 agent.updateRotation = false;
-                                aiGunAim.AimAt(target);
-                                aiBehaviourHandler.Look(target);
+                               
+                              //  aiBehaviourHandler.Look(target);
+                             RaycastHit hit;
+                                if (Physics.Raycast(fpsCamera.transform.position, fpsCamera.transform.forward, out hit, 100))
+                                {
+                                    if (hit.transform.gameObject.tag == opponentsTag)
+                                    {
+                                        if (Time.time > nextFire)
+                                        {
+
+
+                                            aiBehaviourHandler.Shoot();
+
+                                            nextFire = Time.time + fireRate;
+                                        }
+                                    }
+                                }
+                                  
                             }
                             else
                             {
                                 return Action.Result.FAILED;
                             }
-                            if (Time.time > nextFire)
-                            {
-                               
-
-                                aiBehaviourHandler.Shoot();
-                          
-                                nextFire = Time.time + fireRate;
-                            }
+                            
                             return Action.Result.PROGRESS;
                         }
                         else
                         {
                             return Action.Result.FAILED;
                         }
-                    })
+                    }))
                     { Label = "Shoot" },
                                 // go towards player until playerDistance is greater than 20f ( in that case, _shouldCancel will get true )
                                 new Action((bool _shouldCancel) =>
@@ -77,9 +91,6 @@ namespace Rogue
                             ));
 
         }
-void EmptyMethod()
-        {
 
-        }
     }
 }

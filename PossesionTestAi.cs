@@ -14,20 +14,20 @@ namespace Rogue
         //public string targetType = "Player";
         private Root behaviorTree;
         public Transform target;
-        public NavMeshAgent agent;
+      NavMeshAgent agent;
         public float nextFire;
         public float fireRate = 7f;
         // public LayerMask layerMask;
         public float speed = 5f;
-        public Shoot shoot;
+       Shoot shoot;
         AIPatrol aiPatrol;
-        public AiGunAim aiGunAim;
+        AiGunAim aiGunAim;
         Vector3 playerLocalPos;
         public float viewDistance;
         public float viewAngle;
         public LayerMask viewMask;
         public List<GameObject> opponentsList;
-        public SubTreeFactory subTreeFactory;
+        SubTreeFactory subTreeFactory;
         public string opponentsTag = "Player";
         private void OnEnable()
         {
@@ -64,6 +64,7 @@ namespace Rogue
                 {
                     target = null;
                     behaviorTree.Blackboard["target"] = target;
+                   
                 }
             }
             
@@ -82,7 +83,7 @@ namespace Rogue
                   // When the condition changes, we want to immediately jump in or out of this path, thus we use IMMEDIATE_RESTART
                   new BlackboardCondition("target", Operator.IS_NOT_EQUAL, null, Stops.IMMEDIATE_RESTART,
 
-                          subTreeFactory.CreateCombatSubtree(thisblackboard, aiGunAim, target, agent, shoot, aiPatrol, nextFire, fireRate)
+                          subTreeFactory.CreateCombatSubtree(thisblackboard, aiGunAim, target, agent, shoot, aiPatrol,opponentsTag, nextFire, fireRate)
 
 
                         ),
@@ -133,8 +134,11 @@ namespace Rogue
                         float angleBetweenGuardAndPLayer = Vector3.Angle(transform.forward, dirToPlayer);
                         if (angleBetweenGuardAndPLayer < viewAngle / 2f)
                         {
-                            if (!Physics.Linecast(transform.position, go.transform.position, viewMask))
+                            Debug.DrawLine(transform.position, go.transform.position);
+                               RaycastHit hitInfoLinecast;
+                            if (!Physics.Linecast(transform.position, go.transform.position,out hitInfoLinecast, viewMask))
                             {
+                                
                                 behaviorTree.Blackboard["target"] = null;
                                 target = go.transform;
                                 behaviorTree.Blackboard["target"] = target;
@@ -176,11 +180,24 @@ namespace Rogue
             return false;
 
         }
-        //private void OnDrawGizmos()
-        //{
-        //    Gizmos.color = Color.red;
-        //    Gizmos.DrawRay(transform.position, transform.forward * viewDistance);
-        //}
+        private void OnDrawGizmos()
+        {
+            if (!Application.isPlaying) return;
+            if (agent != null || agent.path != null)
+            {
+                for (int i = 0; i < agent.path.corners.Length - 1; i++)
+                {
+                    Debug.DrawLine(agent.path.corners[i], agent.path.corners[i + 1], Color.green);
+                }
+            }
+            else
+            {
+                return;
+            }
+              
+            //    Gizmos.color = Color.red;
+            //    Gizmos.DrawRay(transform.position, transform.forward * viewDistance);
+        }
 
         private void SetColor(Color color)
         {
@@ -197,6 +214,10 @@ namespace Rogue
             {
                 behaviorTree.Stop();
             }
+        }
+        public void EmptyMethod()
+        {
+            aiGunAim.AimAt(target);
         }
     }
 
